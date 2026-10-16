@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}معرض المشاريع الأكاديمية | أثَر{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-8">
+
+    <!-- الفلاتر العلوية: كبسولات تصنيف زجاجية مطابقة تماماً للموكاب -->
+    <div class="flex items-center justify-between flex-wrap gap-4 pb-2 border-b border-borderCrystal/30">
+        <div class="flex items-center gap-2 overflow-x-auto py-1 max-w-full">
+            <!-- زر الكل -->
+            <a href="{% url 'projects:gallery' %}{% if search_query %}?q={{ search_query }}{% endif %}" 
+               class="px-4 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap {% if not selected_category %}bg-cyanNeon/15 text-cyanNeon border border-cyanNeon/50 shadow-[0_0_15px_rgba(0,217,255,0.2)]{% else %}glass-panel text-textMuted hover:text-textBright{% endif %}">
+                جميع التخصصات
+            </a>
+
+            <!-- التصنيفات الديناميكية -->
+            {% for cat in categories %}
+            <a href="?category={{ cat.slug }}{% if search_query %}&q={{ search_query }}{% endif %}" 
+               class="px-4 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap {% if selected_category == cat.slug %}bg-cyanNeon/15 text-cyanNeon border border-cyanNeon/50 shadow-[0_0_15px_rgba(0,217,255,0.2)]{% else %}glass-panel text-textMuted hover:text-textBright{% endif %}">
+                {{ cat.name }}
+            </a>
+            {% endfor %}
+        </div>
+
+        <!-- عداد المشاريع -->
+        <span class="text-xs text-textMuted font-mono">
+            المشاريع المعروضة: <strong class="text-textBright">{{ projects.count }}</strong>
+        </span>
+    </div>
+
+    <!-- شبكة بطاقات المشاريع الزجاجية -->
+    {% if projects %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {% for project in projects %}
+        <article class="glass-card rounded-2xl overflow-hidden flex flex-col group relative">
+            
+            <!-- غلاف المشروع أو المعاينة البصرية -->
+            <div class="h-44 w-full bg-void/80 relative overflow-hidden border-b border-borderCrystal/40">
+                {% if project.cover_image %}
+                    <img src="{{ project.cover_image.url }}" alt="{{ project.title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100">
+                {% else %}
+                    <div class="w-full h-full flex flex-col items-center justify-center text-textMuted p-4 text-center">
+                        <svg class="w-10 h-10 mb-2 text-cyanNeon/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                        <span class="text-xs">توثيق برمجي وتقني</span>
+                    </div>
+                {% endif %}
+
+                <!-- وسم حالة المشروع -->
+                <div class="absolute top-3 left-3">
+                    {% if project.status == 'Approved' %}
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-semibold bg-emerald-950/80 text-emerald-400 border border-emerald-500/30">معتمد للنشر</span>
+                    {% elif project.status == 'Under Review' %}
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-semibold bg-amber-950/80 text-amber-300 border border-amber-500/30">قيد التحكيم</span>
+                    {% else %}
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-semibold bg-white/10 text-textMuted border border-white/20">{{ project.get_status_display }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- محتوى البطاقة الوصفي -->
+            <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
+                <div>
+                    <!-- التصنيفات المصغرة -->
+                    <div class="flex flex-wrap gap-1 mb-2">
+                        {% for c in project.categories.all %}
+                            <span class="text-[10px] text-cyanNeon/80 bg-cyanNeon/5 px-2 py-0.5 rounded border border-cyanNeon/20">{{ c.name }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <h2 class="text-base font-semibold text-textBright group-hover:text-cyanNeon transition-colors line-clamp-1">
+                        {{ project.title }}
+                    </h2>
+
+                    <p class="text-xs text-textMuted mt-1.5 line-clamp-2 leading-relaxed">
+                        {{ project.summary }}
+                    </p>
+                </div>
+
+                <!-- تذييل البطاقة: اسم الطالب والتقنيات -->
+                <div class="pt-3 border-t border-borderCrystal/30 flex items-center justify-between text-xs text-textMuted">
+                    <div class="flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full bg-void border border-borderCrystal flex items-center justify-center text-[10px] text-goldMark">
+                            {{ project.created_by.first_name|default:project.created_by.username|slice:":1" }}
+                        </span>
+                        <span class="truncate max-w-[110px]">{{ project.created_by.get_full_name|default:project.created_by.username }}</span>
+                    </div>
+
+                    {% if project.repository_url %}
+                    <a href="{{ project.repository_url }}" target="_blank" class="text-textMuted hover:text-cyanNeon" title="مستودع الكود">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+
+    <!-- حالة عدم وجود مشاريع مطابقة -->
+    {% else %}
+    <div class="glass-panel rounded-3xl p-12 text-center max-w-lg mx-auto space-y-4 my-12 border border-borderCrystal/40">
+        <div class="w-14 h-14 mx-auto rounded-full bg-cyanNeon/10 border border-cyanNeon/30 flex items-center justify-center text-cyanNeon">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+        </div>
+        <h3 class="text-lg font-semibold text-textBright">لم يتم العثور على مشاريع</h3>
+        <p class="text-xs text-textMuted leading-relaxed">
+            لا توجد أعمال معتمدة تطابق معايير التصفية الحالية. يمكنك استكشاف تخصص آخر أو إيداع مشروعك الجديد ليكون أول أثر رقمي هنا.
+        </p>
+        <div class="pt-2">
+            <a href="{% url 'projects:gallery' %}" class="inline-block text-xs text-cyanNeon hover:underline">
+                إعادة ضبط خيارات البحث
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
