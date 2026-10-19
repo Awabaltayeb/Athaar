@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}تسجيل الدخول | أثَر{% endblock %}
+
+{% block content %}
+<div class="min-h-[75vh] flex items-center justify-center py-6 px-4">
+    <div class="glass-panel w-full max-w-md p-8 md:p-10 rounded-3xl relative overflow-hidden shadow-2xl border border-borderCrystal/40">
+        
+        <div class="absolute -left-16 -top-16 w-44 h-44 bg-cyanNeon/15 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="text-center space-y-2 mb-8">
+            <span class="text-2xl font-bold tracking-wider text-goldMark">أثَر</span>
+            <h1 class="text-xl font-bold text-textBright">تسجيل الدخول للمنصة</h1>
+            <p class="text-xs text-textMuted">ادخل بيانات حسابك الجامعي لمتابعة مشاريعك وتقييماتك</p>
+        </div>
+
+        {% if form.non_field_errors %}
+        <div class="mb-6 p-3 rounded-xl bg-rose-950/60 border border-rose-500/40 text-xs text-rose-300">
+            {{ form.non_field_errors.0 }}
+        </div>
+        {% endif %}
+
+        <form method="POST" class="space-y-5">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs font-medium text-textMuted mb-2">اسم المستخدم</label>
+                {{ form.username }}
+                {% if form.username.errors %}<span class="text-[10px] text-rose-400 mt-1 block">{{ form.username.errors.0 }}</span>{% endif %}
+            </div>
+
+            <div>
+                <label class="block text-xs font-medium text-textMuted mb-2">كلمة المرور</label>
+                {{ form.password }}
+                {% if form.password.errors %}<span class="text-[10px] text-rose-400 mt-1 block">{{ form.password.errors.0 }}</span>{% endif %}
+            </div>
+
+            <button type="submit" class="w-full py-3 rounded-xl bg-cyanNeon text-void text-xs font-bold hover:bg-cyanNeon/90 transition-all shadow-[0_0_20px_rgba(0,217,255,0.25)] mt-4">
+                تسجيل الدخول
+            </button>
+        </form>
+
+        <div class="mt-8 pt-6 border-t border-borderCrystal/30 text-center text-xs text-textMuted space-y-2">
+            <p>طالب جديد وتريد توثيق مشروعك؟</p>
+            <a href="{% url 'accounts:register' %}" class="inline-block text-cyanNeon hover:underline font-semibold">
+                إنشاء حساب طالب جديد
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
