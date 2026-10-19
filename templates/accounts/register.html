@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}إنشاء حساب طالب | أثَر{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto py-8 px-4">
+    <div class="glass-panel p-8 md:p-10 rounded-3xl relative overflow-hidden border border-borderCrystal/40 shadow-2xl">
+        
+        <div class="text-center space-y-2 mb-8">
+            <span class="text-2xl font-bold tracking-wider text-goldMark">أثَر</span>
+            <h1 class="text-xl font-bold text-textBright">إنشاء حساب طالب جديد</h1>
+            <p class="text-xs text-textMuted">انضم لمستودع أثَر الأكاديمي لتوثيق أعمالك وعرضها للتحكيم</p>
+        </div>
+
+        <form method="POST" class="space-y-5">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-textMuted mb-2">الاسم الأول</label>
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}<span class="text-[10px] text-rose-400 block mt-1">{{ form.first_name.errors.0 }}</span>{% endif %}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-textMuted mb-2">اسم العائلة</label>
+                    {{ form.last_name }}
+                    {% if form.last_name.errors %}<span class="text-[10px] text-rose-400 block mt-1">{{ form.last_name.errors.0 }}</span>{% endif %}
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-textMuted mb-2">اسم المستخدم (English)</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}<span class="text-[10px] text-rose-400 block mt-1">{{ form.username.errors.0 }}</span>{% endif %}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-textMuted mb-2">البريد الإلكتروني</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}<span class="text-[10px] text-rose-400 block mt-1">{{ form.email.errors.0 }}</span>{% endif %}
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-textMuted mb-2">الرقم الجامعي</label>
+                    {{ form.academic_id }}
+                    {% if form.academic_id.errors %}<span class="text-[10px] text-rose-400 block mt-1">{{ form.academic_id.errors.0 }}</span>{% endif %}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-textMuted mb-2">القسم / التخصص</label>
+                    {{ form.department }}
+                    {% if form.department.errors %}<span class="text-[10px] text-rose-400 block mt-1">{{ form.department.errors.0 }}</span>{% endif %}
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-textMuted mb-2">كلمة المرور</label>
+                    {{ form.password }}
+                    {% if form.password.errors %}<span class="text-[10px] text-rose-400 block mt-1">{{ form.password.errors.0 }}</span>{% endif %}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-textMuted mb-2">تأكيد كلمة المرور</label>
+                    {{ form.confirm_password }}
+                    {% if form.confirm_password.errors %}<span class="text-[10px] text-rose-400 block mt-1">{{ form.confirm_password.errors.0 }}</span>{% endif %}
+                </div>
+            </div>
+
+            <button type="submit" class="w-full py-3.5 rounded-xl bg-cyanNeon text-void text-xs font-bold hover:bg-cyanNeon/90 transition-all shadow-[0_0_20px_rgba(0,217,255,0.25)] mt-6">
+                إتمام التسجيل وإنشاء الحساب
+            </button>
+        </form>
+
+        <div class="mt-8 pt-6 border-t border-borderCrystal/30 text-center text-xs text-textMuted">
+            <span>لديك حساب بالفعل؟ </span>
+            <a href="{% url 'accounts:login' %}" class="text-cyanNeon hover:underline font-semibold">تسجيل الدخول</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
