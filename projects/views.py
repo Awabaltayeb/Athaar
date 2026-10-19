@@ -1,6 +1,9 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Q
-from .models import Project, Category
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import Project, Category, ProjectMember
+from .forms import ProjectSubmissionForm
 
 def project_gallery(request):
     """عرض معرض المشاريع مع دعم البحث والتصفية بحسب التصنيف وحالة الاعتماد"""
@@ -42,7 +45,6 @@ def project_detail(request, pk):
     """عرض تفاصيل المشروع الكاملة، أعضاء الفريق، المرفقات، والتقييمات"""
     project = get_object_or_404(Project, pk=pk)
 
-    # التحقق من الصلاحيات: الزائر يرى فقط المعتمد، بينما الصاحب أو المشرف يرى مشروعه بأي حالة
     if project.status != 'Approved':
         if not request.user.is_authenticated:
             return render(request, 'projects/access_denied.html', status=403)
@@ -65,3 +67,60 @@ def project_detail(request, pk):
         'tech_list': tech_list,
     }
     return render(request, 'projects/project_detail.html', context)
+
+
+@login_required
+def student_dashboard(request):
+    """لوحة الطالب: متابعة مشاريعه الشخصية وحالات المراجعة"""
+    my_projects = Project.objects.filter(created_by=request.user).order_by('-created_at')
+    
+    total_count = my_projects.count()
+    approved_count = my_projects.filter(status='Approved').count()
+    review_count = my_projects.filter(status='Under Review').count()
+    draft_count = my_projects.filter(status='Draft').count()
+
+    context = {
+        'my_projects': my_projects,
+        'total_count': total_count,
+        'approved_count': approved_count,
+        'review_count': review_count,
+        'draft_count': draft_count,
+    }
+    return render(request, 'projects/student_dashboard.html', context)
+
+
+@login_required
+def project_create(request):
+    """استمارة إنشاء وإيداع مشروع جديد للطالب"""
+    if request.method == 'POST':
+        form = ProjectSubmissionForm(request.POST, request.FILES)
+        if form.is_valid():
+            project = form.save(commit=False)
+            project.created_by = request.user
+            
+            # تحديد الحالة بناءً على الزر المضغوط
+            if 'submit_review' in request.POST:
+                project.status = 'Under Review'
+                msg = 'تم إرسال مشروعك بنجاح للمراجعة والتحكيم الأكاديمي!'
+            else:
+                project.status = 'Draft'
+                msg = 'تم حفظ المشروع كمسودة خاصة بك.'
+
+            project.save()
+            form.save_m2m() # حفظ التصنيفات المتعددة
+
+            # إضافة صاحب المشروع تلقائياً كقائد فريق
+            ProjectMember.objects.create(
+                project=project,
+                user=request.user,
+                member_name=request.user.get_full_name() or request.user.username,
+                contribution_role='مؤسس وقائد المشروع',
+                is_team_leader=True
+            )
+
+            messages.success(request, msg)
+            return redirect('projects:dashboard')
+    else:
+        form = ProjectSubmissionForm()
+
+    return render(request, 'projects/project_create.html', {'form': form})
