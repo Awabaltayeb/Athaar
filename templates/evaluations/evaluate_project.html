@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}تحكيم: {{ project.title }} | أثَر{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-8 pb-16">
+
+    <!-- شريط الرجوع -->
+    <a href="{% url 'evaluations:dashboard' %}" class="text-xs text-textMuted hover:text-cyanNeon flex items-center gap-2">
+        <svg class="w-4 h-4 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+        <span>العودة لقائمة المشاريع المعلقة</span>
+    </a>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- العمود الأيمن (معلومات المشروع وفحصه) -->
+        <div class="lg:col-span-5 space-y-6">
+            <div class="glass-panel p-6 rounded-3xl space-y-4 border border-borderCrystal/40">
+                <span class="text-xs font-semibold text-goldMark">بيانات المخرج الأكاديمي</span>
+                <h1 class="text-xl font-bold text-textBright">{{ project.title }}</h1>
+                <p class="text-xs text-textMuted leading-relaxed">{{ project.summary }}</p>
+
+                <div class="pt-3 border-t border-borderCrystal/30 text-xs space-y-2">
+                    <p><strong class="text-textBright">صاحب المشروع:</strong> {{ project.created_by.get_full_name|default:project.created_by.username }}</p>
+                    <p><strong class="text-textBright">المقرر:</strong> {{ project.course_name|default:'غير محدد' }}</p>
+                    <p><strong class="text-textBright">التقنيات:</strong> <span class="font-mono text-cyanNeon">{{ project.technologies|default:'-' }}</span></p>
+                </div>
+
+                <div class="flex flex-wrap gap-2 pt-3">
+                    {% if project.demo_url %}
+                    <a href="{{ project.demo_url }}" target="_blank" class="px-3 py-1.5 rounded-xl bg-cyanNeon/10 border border-cyanNeon/30 text-cyanNeon text-[11px] font-semibold hover:bg-cyanNeon hover:text-void transition-colors">
+                        معاينة النسخة الحية
+                    </a>
+                    {% endif %}
+                    {% if project.repository_url %}
+                    <a href="{{ project.repository_url }}" target="_blank" class="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-textBright text-[11px] font-semibold hover:border-cyanNeon transition-colors">
+                        فحص الكود على GitHub
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if project.problem_statement %}
+            <div class="glass-panel p-5 rounded-2xl space-y-2 text-xs">
+                <strong class="text-cyanNeon block">المشكلة المعالجة:</strong>
+                <p class="text-textBright/90 leading-relaxed">{{ project.problem_statement }}</p>
+            </div>
+            {% endif %}
+
+            {% if project.proposed_solution %}
+            <div class="glass-panel p-5 rounded-2xl space-y-2 text-xs">
+                <strong class="text-cyanNeon block">الحل المقترح:</strong>
+                <p class="text-textBright/90 leading-relaxed">{{ project.proposed_solution }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- العمود الأيسر (استمارة رصد الدرجات والمعايير) -->
+        <div class="lg:col-span-7">
+            <form method="POST" class="glass-panel p-6 md:p-8 rounded-3xl space-y-6 border border-borderCrystal/40">
+                {% csrf_token %}
+
+                <div class="border-b border-borderCrystal/30 pb-4">
+                    <h2 class="text-base font-bold text-textBright">استمارة التحكيم ورصد الدرجات الأكاديمية</h2>
+                    <p class="text-xs text-textMuted mt-1">يتم احتساب المعدل الكلي تلقائياً وفق الأوزان النسبية المعتمدة لكل معيار.</p>
+                </div>
+
+                <!-- شبكة المعايير الخمسة -->
+                <div class="space-y-4">
+                    {% for crit in criteria %}
+                    <div class="p-4 rounded-2xl bg-void/60 border border-borderCrystal/30 space-y-2">
+                        <div class="flex items-center justify-between text-xs">
+                            <label class="font-semibold text-textBright">{{ crit.criterion_name }}</label>
+                            <span class="text-goldMark font-mono">الوزن: {{ crit.weight }}%</span>
+                        </div>
+                        {% if crit.description %}<p class="text-[10px] text-textMuted">{{ crit.description }}</p>{% endif %}
+                        
+                        <div class="flex items-center gap-3 pt-1">
+                            <input type="number" 
+                                   name="criterion_{{ crit.id }}" 
+                                   min="0" max="100" step="1" 
+                                   placeholder="الدرجة من 100" 
+                                   required
+                                   class="form-input-glass text-center font-mono text-sm font-bold w-36">
+                            <span class="text-xs text-textMuted">/ 100</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- التقرير والملاحظات العامة -->
+                <div>
+                    <label class="block text-xs font-semibold text-textBright mb-2">التقرير والملاحظات العامة للمشروع (تظهر في صفحة التفاصيل)</label>
+                    <textarea name="overall_feedback" rows="3" placeholder="اكتب تقرير التحكيم الأكاديمي، نقاط القوة، والتوصيات..." class="form-input-glass"></textarea>
+                </div>
+
+                <!-- صندوق طلب التعديلات (في حال عدم الاعتماد) -->
+                <div class="pt-4 border-t border-borderCrystal/30">
+                    <label class="block text-xs font-medium text-amber-300 mb-2">ملاحظات التعديل (تُكتب فقط في حال أردت إعادة المشروع للطالب للتعديل)</label>
+                    <textarea name="notes" rows="2" placeholder="ما هي التعديلات المطلوبة من الطالب بالتحديد؟" class="form-input-glass border-amber-500/30"></textarea>
+                </div>
+
+                <!-- القراران الحاسمان -->
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4">
+                    <button type="submit" name="action" value="request_changes" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-amber-950/80 border border-amber-500/40 text-amber-300 text-xs font-bold hover:bg-amber-900 transition-all">
+                        إعادة المشروع للطالب للتعديل
+                    </button>
+
+                    <button type="submit" name="action" value="approve_and_publish" class="w-full sm:w-auto px-8 py-3 rounded-xl bg-cyanNeon text-void text-xs font-bold hover:bg-cyanNeon/90 transition-all shadow-[0_0_25px_rgba(0,217,255,0.3)]">
+                        اعتماد ونشر المشروع في المعرض العام
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
