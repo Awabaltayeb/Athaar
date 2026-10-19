@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}لوحة التحكيم والمراجعة الأكاديمية | أثَر{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-8 pb-12">
+
+    <!-- الترويسة ومؤشرات التحكيم -->
+    <div class="glass-panel p-6 md:p-8 rounded-3xl relative overflow-hidden border border-borderCrystal/40 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div>
+            <span class="text-xs font-semibold text-goldMark uppercase tracking-wider">هيئة التحكيم الأكاديمية</span>
+            <h1 class="text-2xl font-bold text-textBright mt-1">بوابة تقييم ومراجعة المشاريع</h1>
+            <p class="text-xs text-textMuted mt-1">المشرف الأكاديمي: <strong class="text-textBright">{{ user.get_full_name|default:user.username }}</strong></p>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <div class="glass-card px-4 py-2.5 rounded-2xl border-amber-500/30 text-center">
+                <span class="text-[10px] text-amber-300 block">تنتظر التحكيم</span>
+                <span class="text-xl font-bold text-amber-300 font-mono">{{ pending_count }}</span>
+            </div>
+            <div class="glass-card px-4 py-2.5 rounded-2xl border-emerald-500/30 text-center">
+                <span class="text-[10px] text-emerald-400 block">تم اعتمادها</span>
+                <span class="text-xl font-bold text-emerald-400 font-mono">{{ approved_count }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- المشاريع التي تنتظر التحكيم والمراجعة -->
+    <div class="space-y-4">
+        <h2 class="text-base font-bold text-textBright flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+            <span>مشاريع جديدة تنتظر التحكيم الأكاديمي ({{ pending_count }})</span>
+        </h2>
+
+        {% if pending_projects %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for project in pending_projects %}
+            <div class="glass-card rounded-2xl p-6 flex flex-col justify-between space-y-4 border-amber-500/30">
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-950/80 text-amber-300 border border-amber-500/40">
+                            قيد المراجعة
+                        </span>
+                        <span class="text-textMuted font-mono text-[11px]">{{ project.created_at|date:"Y/m/d" }}</span>
+                    </div>
+
+                    <h3 class="text-base font-bold text-textBright line-clamp-2">{{ project.title }}</h3>
+                    <p class="text-xs text-textMuted line-clamp-2 leading-relaxed">{{ project.summary }}</p>
+
+                    <div class="pt-2 text-xs text-textMuted flex items-center gap-2">
+                        <span>مقدم من الطالب:</span>
+                        <strong class="text-textBright font-semibold">{{ project.created_by.get_full_name|default:project.created_by.username }}</strong>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-borderCrystal/30">
+                    <a href="{% url 'evaluations:evaluate_project' project.id %}" class="w-full py-2.5 rounded-xl bg-cyanNeon text-void text-xs font-bold hover:bg-cyanNeon/90 transition-all flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(0,217,255,0.2)]">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                        <span>بدء التحكيم ورصد الدرجات</span>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="glass-panel rounded-3xl p-8 text-center text-xs text-textMuted">
+            رائع! لا توجد حالياً أي مشاريع معلقة تنتظر التحكيم.
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- المشاريع المعتمدة مسبقاً -->
+    {% if approved_projects %}
+    <div class="space-y-4 pt-6 border-t border-borderCrystal/30">
+        <h2 class="text-sm font-bold text-textMuted">مشاريع تم تحكيمها واعتمادها مؤخراً</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {% for project in approved_projects|slice:":8" %}
+            <div class="glass-card p-4 rounded-2xl flex items-center justify-between">
+                <div class="overflow-hidden">
+                    <h4 class="text-xs font-semibold text-textBright truncate">{{ project.title }}</h4>
+                    <span class="text-[10px] text-textMuted">{{ project.created_by.get_full_name|default:project.created_by.username }}</span>
+                </div>
+                <a href="{% url 'projects:project_detail' project.pk %}" class="text-cyanNeon text-xs hover:underline mr-2">عرض</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
