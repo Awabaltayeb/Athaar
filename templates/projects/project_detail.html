@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ project.title }} | أثَر{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-8 pb-12">
+
+    <!-- شريط الرجوع والمسار -->
+    <div class="flex items-center justify-between">
+        <a href="{% url 'projects:gallery' %}" class="text-xs text-textMuted hover:text-cyanNeon flex items-center gap-2 transition-colors">
+            <svg class="w-4 h-4 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            <span>العودة لمعرض المشاريع</span>
+        </a>
+
+        <div>
+            {% if project.status == 'Approved' %}
+                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-950/80 text-emerald-400 border border-emerald-500/40">معتمد للنشر الأكاديمي</span>
+            {% else %}
+                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-amber-950/80 text-amber-300 border border-amber-500/40">{{ project.get_status_display }}</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ترويسة المشروع البصرية (Hero Banner) -->
+    <div class="glass-panel rounded-3xl p-6 md:p-10 relative overflow-hidden">
+        <div class="absolute -right-20 -top-20 w-80 h-80 bg-cyanNeon/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="flex flex-wrap gap-2 mb-3">
+            {% for cat in project.categories.all %}
+                <span class="px-3 py-1 rounded-full text-xs font-medium bg-cyanNeon/10 text-cyanNeon border border-cyanNeon/30">{{ cat.name }}</span>
+            {% endfor %}
+            {% if project.course_name %}
+                <span class="px-3 py-1 rounded-full text-xs bg-white/5 text-textMuted border border-white/10">{{ project.course_name }}</span>
+            {% endif %}
+            {% if project.semester %}
+                <span class="px-3 py-1 rounded-full text-xs bg-white/5 text-textMuted border border-white/10">{{ project.semester }}</span>
+            {% endif %}
+        </div>
+
+        <h1 class="text-2xl md:text-4xl font-bold text-textBright tracking-tight leading-tight max-w-4xl">
+            {{ project.title }}
+        </h1>
+
+        <p class="text-sm md:text-base text-textMuted mt-4 max-w-3xl leading-relaxed">
+            {{ project.summary }}
+        </p>
+
+        <!-- روابط المستودع والمعاينة الحية -->
+        <div class="flex flex-wrap gap-4 mt-6 pt-6 border-t border-borderCrystal/30">
+            {% if project.demo_url %}
+            <a href="{{ project.demo_url }}" target="_blank" class="px-5 py-2.5 rounded-xl bg-cyanNeon text-void text-xs font-bold hover:bg-cyanNeon/90 transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(0,217,255,0.3)]">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                <span>النسخة الحية / المعاينة</span>
+            </a>
+            {% endif %}
+
+            {% if project.repository_url %}
+            <a href="{{ project.repository_url }}" target="_blank" class="px-5 py-2.5 rounded-xl glass-card text-textBright text-xs font-semibold hover:border-cyanNeon transition-all flex items-center gap-2">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+                <span>مستودع الكود المصدري</span>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- شبكة المحتوى المتفرعة -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- العمود الأيمن الرئيسي (المشكلة، الحل، الأهداف) -->
+        <div class="lg:col-span-2 space-y-6">
+            
+            {% if project.problem_statement %}
+            <div class="glass-panel rounded-2xl p-6 space-y-2">
+                <h2 class="text-sm font-bold text-cyanNeon flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-cyanNeon"></span>
+                    <span>المشكلة التي يعالجها المشروع</span>
+                </h2>
+                <p class="text-sm text-textBright/90 leading-relaxed whitespace-pre-line">{{ project.problem_statement }}</p>
+            </div>
+            {% endif %}
+
+            {% if project.proposed_solution %}
+            <div class="glass-panel rounded-2xl p-6 space-y-2">
+                <h2 class="text-sm font-bold text-cyanNeon flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-cyanNeon"></span>
+                    <span>الحل التقني والتطبيقي</span>
+                </h2>
+                <p class="text-sm text-textBright/90 leading-relaxed whitespace-pre-line">{{ project.proposed_solution }}</p>
+            </div>
+            {% endif %}
+
+            {% if project.objectives %}
+            <div class="glass-panel rounded-2xl p-6 space-y-2">
+                <h2 class="text-sm font-bold text-cyanNeon flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-cyanNeon"></span>
+                    <span>أهداف المشروع ومخرجاته</span>
+                </h2>
+                <p class="text-sm text-textBright/90 leading-relaxed whitespace-pre-line">{{ project.objectives }}</p>
+            </div>
+            {% endif %}
+
+            <!-- معرض الوسائط والمرفقات -->
+            {% if media_files %}
+            <div class="glass-panel rounded-2xl p-6 space-y-4">
+                <h2 class="text-sm font-bold text-textBright">المرفقات ومعرض المخرجات</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {% for m in media_files %}
+                        {% if m.media_type == 'image' %}
+                        <div class="rounded-xl overflow-hidden border border-borderCrystal/40 bg-void/50">
+                            <img src="{{ m.file.url }}" alt="{{ m.caption|default:'صورة توثيقية' }}" class="w-full h-40 object-cover">
+                            {% if m.caption %}<p class="p-2 text-[11px] text-textMuted text-center">{{ m.caption }}</p>{% endif %}
+                        </div>
+                        {% else %}
+                        <a href="{{ m.file.url }}" target="_blank" class="p-4 rounded-xl border border-borderCrystal/40 glass-card flex items-center gap-3 group">
+                            <div class="p-2.5 rounded-lg bg-cyanNeon/10 text-cyanNeon">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                            </div>
+                            <div class="overflow-hidden">
+                                <p class="text-xs font-semibold text-textBright truncate group-hover:text-cyanNeon">{{ m.caption|default:'وثيقة المشروع الأكاديمية' }}</p>
+                                <span class="text-[10px] text-textMuted">انقر لتحميل الملف (PDF)</span>
+                            </div>
+                        </a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+
+        <!-- العمود الأيسر الجانبي (فريق العمل، التقنيات، التقييم) -->
+        <div class="space-y-6">
+
+            <!-- بطاقة فريق العمل -->
+            <div class="glass-panel rounded-2xl p-6 space-y-4">
+                <h2 class="text-sm font-bold text-textBright flex items-center justify-between">
+                    <span>فريق العمل</span>
+                    <span class="text-xs text-textMuted font-mono">{{ members.count|add:1 }} أعضاء</span>
+                </h2>
+
+                <div class="space-y-3">
+                    <!-- صاحب المشروع الأساسي -->
+                    <div class="flex items-center justify-between p-2.5 rounded-xl bg-white/5 border border-borderCrystal/30">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-full bg-goldMark/20 border border-goldMark/40 text-goldMark flex items-center justify-center text-xs font-bold">
+                                {{ project.created_by.first_name|default:project.created_by.username|slice:":1" }}
+                            </div>
+                            <div>
+                                <p class="text-xs font-semibold text-textBright">{{ project.created_by.get_full_name|default:project.created_by.username }}</p>
+                                <span class="text-[10px] text-goldMark">مؤسس المشروع</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- بقية أعضاء الفريق الموثقين -->
+                    {% for member in members %}
+                    <div class="flex items-center justify-between p-2.5 rounded-xl bg-white/5 border border-white/5">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-full bg-white/10 text-textMuted flex items-center justify-center text-xs">
+                                {{ member.member_name|slice:":1" }}
+                            </div>
+                            <div>
+                                <p class="text-xs font-semibold text-textBright">{{ member.member_name }}</p>
+                                <span class="text-[10px] text-textMuted">{{ member.contribution_role }}</span>
+                            </div>
+                        </div>
+                        {% if member.is_team_leader %}
+                            <span class="text-[10px] text-cyanNeon bg-cyanNeon/10 px-2 py-0.5 rounded border border-cyanNeon/20">قائد</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- بطاقة التقنيات المستخدمة -->
+            {% if tech_list %}
+            <div class="glass-panel rounded-2xl p-6 space-y-3">
+                <h2 class="text-sm font-bold text-textBright">التقنيات والأدوات</h2>
+                <div class="flex flex-wrap gap-1.5">
+                    {% for tech in tech_list %}
+                        <span class="px-2.5 py-1 rounded-lg text-xs bg-void border border-borderCrystal text-cyanNeon/90 font-mono">{{ tech }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- بطاقة التقييم الأكاديمي (إذا كان المشروع مقيماً) -->
+            {% if evaluations %}
+            <div class="glass-panel rounded-2xl p-6 space-y-4 border-goldMark/30">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-sm font-bold text-goldMark flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <span>التحكيم والتقييم الأكاديمي</span>
+                    </h2>
+                    <span class="text-base font-bold text-goldMark font-mono">{{ evaluations.first.total_score }}%</span>
+                </div>
+
+                <div class="space-y-2.5 pt-2">
+                    {% for score in evaluations.first.scores.all %}
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-xs text-textMuted">
+                            <span>{{ score.criterion.criterion_name }}</span>
+                            <span class="font-mono text-textBright">{{ score.score }}/100</span>
+                        </div>
+                        <div class="w-full h-1.5 rounded-full bg-void overflow-hidden">
+                            <div class="h-full bg-cyanNeon rounded-full" style="width: {{ score.score }}%"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% if evaluations.first.overall_feedback %}
+                <div class="pt-3 border-t border-borderCrystal/30">
+                    <p class="text-[11px] text-textMuted leading-relaxed">
+                        <strong class="text-textBright block mb-1">ملاحظات لجنة التحكيم:</strong>
+                        {{ evaluations.first.overall_feedback }}
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
