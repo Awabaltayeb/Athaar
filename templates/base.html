@@ -94,7 +94,7 @@
 </head>
 <body class="flex flex-col md:flex-row h-screen overflow-hidden antialiased selection:bg-cyanNeon selection:text-void">
 
-    <!-- شريط التنقل الجانبي -->
+    <!-- شريط التنقل الجانبي الأيقوني -->
     <aside class="w-full md:w-20 glass-panel md:border-l border-b md:border-b-0 border-borderCrystal flex md:flex-col items-center justify-between p-4 md:py-6 z-30 shrink-0">
         <a href="{% url 'projects:gallery' %}" class="flex flex-col items-center group">
             <span class="text-xl font-bold tracking-wider text-goldMark">أثَر</span>
@@ -105,18 +105,27 @@
             <a href="{% url 'projects:gallery' %}" class="p-2.5 rounded-xl text-cyanNeon bg-cyanNeon/10 border border-cyanNeon/30 transition-colors" title="معرض المشاريع">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
             </a>
-            <a href="/admin/" class="p-2.5 rounded-xl text-textMuted hover:text-textBright hover:bg-white/5 transition-colors" title="لوحة الإدارة الرسمية">
+
+            {% if user.is_authenticated %}
+            <a href="{% url 'projects:project_create' %}" class="p-2.5 rounded-xl text-textMuted hover:text-cyanNeon hover:bg-white/5 transition-colors" title="إيداع مشروع جديد">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            </a>
+            <a href="{% url 'projects:dashboard' %}" class="p-2.5 rounded-xl text-textMuted hover:text-textBright hover:bg-white/5 transition-colors" title="لوحة مشاريعي">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+            </a>
+            {% endif %}
+
+            <a href="/admin/" class="p-2.5 rounded-xl text-textMuted hover:text-textBright hover:bg-white/5 transition-colors" title="لوحة الإدارة">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </a>
         </nav>
 
-        <!-- البروفايل أو روابط الدخول -->
         <div class="flex items-center">
             {% if user.is_authenticated %}
                 <div class="flex flex-col items-center gap-1 group relative">
-                    <div class="w-8 h-8 rounded-full border border-cyanNeon/40 bg-void flex items-center justify-center text-xs font-bold text-cyanNeon">
+                    <a href="{% url 'projects:dashboard' %}" class="w-8 h-8 rounded-full border border-cyanNeon/40 bg-void flex items-center justify-center text-xs font-bold text-cyanNeon" title="لوحة حسابي">
                         {{ user.first_name|default:user.username|slice:":1"|upper }}
-                    </div>
+                    </a>
                     <a href="{% url 'accounts:logout' %}" class="text-[10px] text-textMuted hover:text-rose-400 transition-colors" title="تسجيل الخروج">
                         خروج
                     </a>
@@ -129,7 +138,7 @@
         </div>
     </aside>
 
-    <!-- المساحة العامة -->
+    <!-- المساحة العامة والمحتوى -->
     <main class="flex-1 flex flex-col h-full overflow-hidden">
         
         <header class="h-16 px-6 md:px-10 flex items-center justify-between border-b border-borderCrystal/50 shrink-0">
@@ -146,7 +155,13 @@
 
             <div class="flex items-center gap-4 text-xs">
                 {% if user.is_authenticated %}
-                    <span class="text-textMuted hidden sm:inline">أهلاً، <strong class="text-textBright font-semibold">{{ user.get_full_name|default:user.username }}</strong> ({{ user.get_role_display }})</span>
+                    <a href="{% url 'projects:project_create' %}" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cyanNeon/15 text-cyanNeon border border-cyanNeon/40 hover:bg-cyanNeon hover:text-void font-semibold transition-all">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        <span>إيداع مشروع</span>
+                    </a>
+                    <a href="{% url 'projects:dashboard' %}" class="text-textMuted hover:text-textBright hidden md:inline">
+                        أهلاً، <strong class="text-textBright font-semibold">{{ user.first_name|default:user.username }}</strong>
+                    </a>
                 {% else %}
                     <div class="flex items-center gap-2">
                         <a href="{% url 'accounts:login' %}" class="px-3.5 py-1.5 rounded-full text-textBright hover:text-cyanNeon glass-panel transition-colors">دخول</a>
@@ -156,7 +171,6 @@
             </div>
         </header>
 
-        <!-- رسائل النظام والتنبيهات (Messages) -->
         {% if messages %}
         <div class="px-6 md:px-10 pt-4">
             {% for message in messages %}
