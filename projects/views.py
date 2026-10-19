@@ -7,21 +7,17 @@ def project_gallery(request):
     query = request.GET.get('q', '').strip()
     category_slug = request.GET.get('category', '').strip()
 
-    # للزوار العاديين: نعرض المشاريع المعتمدة فقط
     projects = Project.objects.filter(status='Approved')
 
-    # للمستخدمين المسجلين: المشرف يرى كل المشاريع، والطالب يرى المعتمدة ومشاريع نفسه
     if request.user.is_authenticated:
         if request.user.is_supervisor or request.user.is_admin_user:
             projects = Project.objects.all()
         else:
             projects = Project.objects.filter(Q(status='Approved') | Q(created_by=request.user))
 
-    # التصفية حسب التصنيف المختار
     if category_slug:
         projects = projects.filter(categories__slug=category_slug)
 
-    # التصفية حسب كلمة البحث (بالعنوان، الملخص، التقنيات، أو اسم صاحب المشروع)
     if query:
         projects = projects.filter(
             Q(title__icontains=query) |
@@ -40,3 +36,32 @@ def project_gallery(request):
         'search_query': query,
     }
     return render(request, 'projects/gallery.html', context)
+
+
+def project_detail(request, pk):
+    """عرض تفاصيل المشروع الكاملة، أعضاء الفريق، المرفقات، والتقييمات"""
+    project = get_object_or_404(Project, pk=pk)
+
+    # التحقق من الصلاحيات: الزائر يرى فقط المعتمد، بينما الصاحب أو المشرف يرى مشروعه بأي حالة
+    if project.status != 'Approved':
+        if not request.user.is_authenticated:
+            return render(request, 'projects/access_denied.html', status=403)
+        if not (request.user == project.created_by or request.user.is_supervisor or request.user.is_admin_user):
+            return render(request, 'projects/access_denied.html', status=403)
+
+    members = project.members.all()
+    media_files = project.media_files.all()
+    evaluations = project.evaluations.prefetch_related('scores__criterion').all()
+    comments = project.comments.select_related('author').filter(is_internal=False)
+
+    tech_list = [t.strip() for t in project.technologies.split(',')] if project.technologies else []
+
+    context = {
+        'project': project,
+        'members': members,
+        'media_files': media_files,
+        'evaluations': evaluations,
+        'comments': comments,
+        'tech_list': tech_list,
+    }
+    return render(request, 'projects/project_detail.html', context)
